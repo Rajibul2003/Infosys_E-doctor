@@ -16,21 +16,30 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/register",
                                 "/api/auth/verify-email",
                                 "/api/auth/login",
-                                "/api/auth/reset-password"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                                "/api/auth/reset-password",
+                                "/api/auth/reset-password/confirm"
+                        ).permitAll()  // Allow access without authentication
+                        .anyRequest().authenticated() // All other requests require authentication
                 )
                 .formLogin(form -> form
-                        .loginPage("/api/auth/login") // Specify your login endpoint
-                        .defaultSuccessUrl("/dashboard", true) // Redirect to the dashboard after successful login
+                        .loginPage("/api/auth/login") // Custom login page
+                        .loginProcessingUrl("/process-login") // Endpoint where credentials are processed
+                        .defaultSuccessUrl("/dashboard", true) // Redirect after successful login
+                        .failureUrl("/api/auth/login?error=true") // Redirect back to login page on failure
                         .permitAll()
                 )
-                .logout(LogoutConfigurer::permitAll);
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/api/auth/login?logout=true") // Redirect to login page after logout
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                );
 
         return http.build();
     }
@@ -40,3 +49,5 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+
+

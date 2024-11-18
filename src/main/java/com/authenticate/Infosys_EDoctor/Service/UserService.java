@@ -6,8 +6,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService extends UserDetailsService {
     String registerUser(User user);
-    boolean loginUser(@Valid String username, String password, User.Role role);
-    boolean verifyEmail(String token);
-    String resetPassword(String email, String newPassword);
-    String sendResetPasswordToken(String email);
+    boolean loginUser(@Valid String username, String password);
+    boolean verifyEmail(String token, String username);
+    boolean resetPassword(String email, String token, String newPassword);
+    boolean sendResetPasswordToken(String email);
 }

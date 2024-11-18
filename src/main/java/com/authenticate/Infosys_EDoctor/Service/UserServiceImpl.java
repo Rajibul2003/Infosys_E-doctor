@@ -30,73 +30,91 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public String registerUser(User user) {
+        Optional<User> exist = userRepository.findByUsername(user.getUsername());
+        if(exist.isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword())); // Encrypt the password
-        String verificationCode = generateOTP(4);
+        String verificationCode = generateOTP();
         user.setVerificationCode(verificationCode);
         userRepository.save(user);
 
-        //String verificationLink = "http://localhost:8080/api/auth/verify-email?code=" + user.getVerificationCode();
-        emailService.sendEmail(user.getEmail(), "Email Verification", "Click the link to verify your email: " + verificationCode);
+
+        emailService.sendEmail(user.getEmail(), "Email Verification", "Your OTP is: " + verificationCode + "\n Enter the OTP in the application to verify email.");
 
         return "Registration successful! Please check your email to verify your account.";
     }
 
     @Override
-    public boolean loginUser(@Valid String username, String password, User.Role role) {
+    public boolean loginUser(@Valid String username, String password) {
         User existingUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
 
         if(!existingUser.isEnabled()) {
-            System.out.println("Verify email before logging in");
-            return false;
+            throw new RuntimeException("Verify your email before logging in");
         }
 
-        return passwordEncoder.matches(password, existingUser.getPassword()) && role.equals(existingUser.getRole());
-    }
-
-    @Override
-    public boolean verifyEmail(String verificationCode) {
-        Optional<User> userOpt = userRepository.findByVerificationCode(verificationCode);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            user.setEnabled(true);
-            user.setVerificationCode(null);
-            userRepository.save(user);
-            System.out.println("Email verified successfully!");
+        if(passwordEncoder.matches(password, existingUser.getPassword())) {
             return true;
-        } else {
-            return false;
+        }
+        else {
+            throw new RuntimeException("Enter valid password");
         }
     }
 
     @Override
-    public String sendResetPasswordToken(String email) {
+    public boolean verifyEmail(String verificationCode, String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        User user;
+
+        if(userOpt.isPresent()) {
+            user = userOpt.get();
+        }
+        else {
+            throw new UsernameNotFoundException("Username not found");
+        }
+
+        if (!verificationCode.equals(user.getVerificationCode())) {
+            throw new RuntimeException("Enter valid OTP");
+        }
+
+        user.setEnabled(true);
+        user.setVerificationCode(null);
+        userRepository.save(user);
+        return true;
+    }
+
+    @Override
+    public boolean sendResetPasswordToken(String email) {
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            user.setResetPasswordToken(UUID.randomUUID().toString());
+            String resetPasswordToken = generateOTP();
+            user.setResetPasswordToken(resetPasswordToken);
             userRepository.save(user);
 
-            String resetLink = "http://localhost:8080/api/auth/reset-password/confirm?token=" + user.getResetPasswordToken();
-            emailService.sendEmail(user.getEmail(), "Password Reset Request", "Click the link to reset your password: " + resetLink);
+            emailService.sendEmail(user.getEmail(), "Password Reset Request", "Give the otp and new password: " + resetPasswordToken);
 
-            return "Password reset email sent.";
+            return true;
         } else {
-            return "User with this email does not exist.";
+            throw new RuntimeException("Invalid email");
         }
     }
 
     @Override
-    public String resetPassword(String token, String newPassword) {
-        Optional<User> userOpt = userRepository.findByResetPasswordToken(token);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
+    public boolean resetPassword(String email, String token, String newPassword) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        User user = userOpt.get();
+
+        if(user.getResetPasswordToken().equals(token)) {
             user.setPassword(passwordEncoder.encode(newPassword));
             user.setResetPasswordToken(null);
             userRepository.save(user);
-            return "Password updated successfully!";
-        } else {
-            return "Invalid reset token.";
+            return true;
+        }
+        else {
+            throw new RuntimeException("Enter valid OTP");
         }
     }
 
@@ -111,10 +129,10 @@ public class UserServiceImpl implements UserService {
     private static final String NUMBERS = "0123456789";
     private static final SecureRandom random = new SecureRandom();
 
-    public String generateOTP(int length) {
-        StringBuilder otp = new StringBuilder(length);
+    public String generateOTP() {
+        StringBuilder otp = new StringBuilder(4);
 
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < 4; i++) {
             otp.append(NUMBERS.charAt(random.nextInt(NUMBERS.length())));
         }
 
