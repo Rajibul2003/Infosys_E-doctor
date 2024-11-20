@@ -33,7 +33,7 @@ public class User {
 
     @NotBlank(message = "Email is mandatory")
     @Email(message = "Invalid email address")
-    @Column(unique = true)
+    @Column()
     private String email;
 
     private boolean enabled = false; // for email verification
