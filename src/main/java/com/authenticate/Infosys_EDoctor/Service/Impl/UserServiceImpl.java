@@ -1,7 +1,8 @@
-package com.authenticate.Infosys_EDoctor.Service;
+package com.authenticate.Infosys_EDoctor.Service.Impl;
 
 import com.authenticate.Infosys_EDoctor.Entity.User;
 import com.authenticate.Infosys_EDoctor.Repository.UserRepository;
+import com.authenticate.Infosys_EDoctor.Service.UserService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {

@@ -1,4 +1,4 @@
-package com.authenticate.Infosys_EDoctor.Service;
+package com.authenticate.Infosys_EDoctor.Service.Impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -16,6 +16,14 @@ public class EmailService {
         message.setTo(to);
         message.setSubject(subject);
         message.setText(content);
+        mailSender.send(message);
+    }
+
+    public void sendDoctorIdEmail(String email, String doctorId) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Doctor Profile Created");
+        message.setText("Your Doctor ID is: " + doctorId + "\nSave this ID for further references");
         mailSender.send(message);
     }
 }
