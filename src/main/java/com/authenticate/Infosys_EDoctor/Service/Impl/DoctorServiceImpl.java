@@ -33,8 +33,11 @@ public class DoctorServiceImpl implements DoctorService {
         String id = "DOC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         doctor.setDoctorId(id);
         doctor.setPassword(passwordEncoder.encode(doctor.getPassword()));
+
         Doctor savedDoc = doctorRepository.save(doctor);
+
         emailService.sendDoctorIdEmail(savedDoc.getEmail(), savedDoc.getDoctorId());
+
         return savedDoc;
     }
 
@@ -43,11 +46,6 @@ public class DoctorServiceImpl implements DoctorService {
         Doctor doctor = doctorRepository.findByDoctorId(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
         return doctor;
-    }
-
-    @Override
-    public List<Doctor> getAllDoctors() {
-        return doctorRepository.findAll();
     }
 
     @Override
@@ -61,6 +59,7 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setHospitalName(updatedDoctor.getHospitalName());
         doctor.setMobileNo(updatedDoctor.getMobileNo());
         doctor.setEmail(updatedDoctor.getEmail());
+
         return doctorRepository.save(doctor);
     }
 

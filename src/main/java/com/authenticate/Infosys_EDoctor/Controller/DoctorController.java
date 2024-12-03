@@ -18,31 +18,25 @@ public class DoctorController {
     @Autowired
     private DoctorService doctorService;
 
-    @PostMapping("/add")
+    @PostMapping("/addProfile")
     public ResponseEntity<Doctor> addDoctor(@RequestBody Doctor doctor) {
         Doctor newDoctor = doctorService.addDoctor(doctor);
         return ResponseEntity.ok(newDoctor);
     }
 
-    @GetMapping("/view")
+    @GetMapping("/viewProfile")
     public ResponseEntity<Doctor> getDoctorById(@RequestParam String doctorId) {
         Doctor doctor = doctorService.getDoctorById(doctorId);
         return ResponseEntity.ok(doctor);
     }
 
-    @GetMapping("/get-all-doctors")
-    public ResponseEntity<List<Doctor>> getAllDoctors() {
-        List<Doctor> doctors = doctorService.getAllDoctors();
-        return ResponseEntity.ok(doctors);
-    }
-
-    @PutMapping("/update")
+    @PutMapping("/updateProfile")
     public ResponseEntity<Doctor> updateDoctor(@RequestParam String doctorId, @RequestBody Doctor doctor) {
         Doctor updatedDoctor = doctorService.updateDoctor(doctorId, doctor);
         return ResponseEntity.ok(updatedDoctor);
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/deleteProfile")
     public ResponseEntity<String> deleteDoctor(@RequestParam String doctorId) {
         doctorService.deleteDoctor(doctorId);
         return ResponseEntity.ok("Doctor " + doctorId + " deleted successfully.");

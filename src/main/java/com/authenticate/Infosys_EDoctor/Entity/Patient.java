@@ -4,22 +4,19 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-@Data
 @Entity
-@Table(name = "doctors")
-public class Doctor {
+@Data
+@Table(name = "patients")
+public class Patient {
+    public enum Gender {
+        MALE, FEMALE, OTHERS
+    }
+
     @Id
-    private String doctorId;
+    private String patientId;
 
     @NotBlank(message = "Name is mandatory")
     private String name;
-
-    private String specialization;
-
-    @NotBlank(message = "Location is mandatory")
-    private String location;
-
-    private String hospitalName;
 
     @NotBlank(message = "Mobile number is mandatory")
     @Pattern(regexp = "\\d{10}", message = "Mobile number must consist of 10 digits")
@@ -35,6 +32,16 @@ public class Doctor {
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
+    private String bloodGroup;
+
+    @NotNull(message = "Gender is mandatory")
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
     @NotNull
-    private int chargedPerVisit;
+    @Min(value = 1)
+    private int age;
+
+    @NotBlank
+    private String address;
 }

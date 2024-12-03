@@ -9,7 +9,6 @@ import java.util.List;
 public interface DoctorService {
     Doctor addDoctor(Doctor doctor);
     Doctor getDoctorById(String doctorId);
-    List<Doctor> getAllDoctors();
     Doctor updateDoctor(String doctorId, Doctor doctor);
     void deleteDoctor(String doctorId);
     List<DoctorAvailability> getAvailableSlots(String doctorId);
