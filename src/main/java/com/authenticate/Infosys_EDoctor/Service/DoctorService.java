@@ -1,5 +1,6 @@
 package com.authenticate.Infosys_EDoctor.Service;
 
+import com.authenticate.Infosys_EDoctor.Entity.Appointment;
 import com.authenticate.Infosys_EDoctor.Entity.Doctor;
 import com.authenticate.Infosys_EDoctor.Entity.DoctorAvailability;
 import org.springframework.http.ResponseEntity;
@@ -13,5 +14,13 @@ public interface DoctorService {
     void deleteDoctor(String doctorId);
     List<DoctorAvailability> getAvailableSlots(String doctorId);
     List<Doctor> findDoctorsBySpecialization(String specialization);
+
+    List<Doctor> findAllDoctors();
+
+    List<Appointment> getAllAppointments(String doctorId);
+
+    Appointment confirmAppointment(Long appointmentId);
+
+    void cancelAppointment(Long appontmentId, String reason);
 }
 

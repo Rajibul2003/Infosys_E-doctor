@@ -1,11 +1,15 @@
 package com.authenticate.Infosys_EDoctor.Service.Impl;
 
+import com.authenticate.Infosys_EDoctor.Entity.Appointment;
 import com.authenticate.Infosys_EDoctor.Entity.Doctor;
 import com.authenticate.Infosys_EDoctor.Entity.DoctorAvailability;
 import com.authenticate.Infosys_EDoctor.Entity.Patient;
 import com.authenticate.Infosys_EDoctor.Repository.DoctorAvailabilityRepository;
 import com.authenticate.Infosys_EDoctor.Repository.DoctorRepository;
 import com.authenticate.Infosys_EDoctor.Repository.PatientRepository;
+import com.authenticate.Infosys_EDoctor.Service.AppointmentService;
+import com.authenticate.Infosys_EDoctor.Service.DoctorAvailabilityService;
+import com.authenticate.Infosys_EDoctor.Service.DoctorService;
 import com.authenticate.Infosys_EDoctor.Service.PatientService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,23 +30,23 @@ public class PatientServiceImpl implements PatientService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private DoctorRepository doctorRepository;
+    private DoctorAvailabilityService doctorAvailabilityService;
 
     @Autowired
-    private DoctorAvailabilityRepository doctorAvailabilityRepository;
+    private DoctorService doctorService;
 
-//    @Autowired
-//    private AppointmentRepository appointmentRepository;
+    @Autowired
+    AppointmentService appointmentService;
 
     @Autowired
     private EmailService emailService;
 
     // 1. Add Profile
     public Patient addPatient(Patient patient) {
-//        Optional<Patient> exists = patientRepository.findByEmail(patient.getEmail());
-//        if(exists.isPresent()) {
-//            throw new RuntimeException("Patient with given email already exists");
-//        }
+        Optional<Patient> exists = patientRepository.findByEmail(patient.getEmail());
+        if(exists.isPresent()) {
+            throw new RuntimeException("Patient with given email already exists");
+        }
 
         String id = "PAT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         patient.setPatientId(id);
@@ -74,46 +79,33 @@ public class PatientServiceImpl implements PatientService {
     // 3. Find Doctors
     public List<Doctor> findDoctors() {
 
-        return doctorRepository.findAll(); // Fetches all doctors
+        return doctorService.findAllDoctors(); // Fetches all doctors
     }
 
     // 4. Make Appointment
-    //public Appointment makeAppointment(Appointment appointment) {
-//        return appointmentRepository.save(appointment);
-//    }
+    public Appointment makeAppointment(Appointment appointment) {
+        return appointmentService.scheduleAppointment(appointment);
+    }
 
     // 5. Update Appointment
-//    @Transactional
-//    public Appointment updateAppointment(Long appointmentId, Appointment updatedAppointment) {
-//        Appointment existingAppointment = appointmentRepository.findById(appointmentId)
-//                .orElseThrow(() -> new IllegalArgumentException("Appointment not found with ID: " + appointmentId));
-//
-//        existingAppointment.setAppointmentDate(updatedAppointment.getAppointmentDate());
-//        existingAppointment.setAppointmentStatus(updatedAppointment.getAppointmentStatus());
-//        existingAppointment.setRemark(updatedAppointment.getRemark());
-//
-//        return existingAppointment;
-//    }
+    public Appointment updateAppointment(Long appointmentId, Appointment updatedAppointment) {
+        return appointmentService.updateAppointment(appointmentId, updatedAppointment);
+    }
 
     // 6. Cancel Appointment
-//    @Transactional
-//    public void cancelAppointment(Long appointmentId) {
-//        Appointment existingAppointment = appointmentRepository.findById(appointmentId)
-//                .orElseThrow(() -> new IllegalArgumentException("Appointment not found with ID: " + appointmentId));
-//
-//        existingAppointment.setAppointmentStatus(Appointment.AppointmentStatus.CANCELED);
-//    }
+    @Override
+    @Transactional
+    public void cancelAppointment(Long appointmentId, String reason) {
+        appointmentService.cancelAppointment(appointmentId, reason);
+    }
 
     public List<Doctor> findDoctorsBySpecialization(String specialization) {
-        return doctorRepository.findBySpecialization(specialization);
+        return doctorService.findDoctorsBySpecialization(specialization);
     }
 
     // Check Available Dates for a Particular Doctor
     public List<DoctorAvailability> getAvailableDates(String doctorId) {
-        Doctor doctor = doctorRepository.findByDoctorId(doctorId)
-                .orElseThrow(() -> new IllegalArgumentException("Doctor not found with ID: " + doctorId));
-
-        return doctorAvailabilityRepository.findByDoctorId(doctorId); // Assuming Doctor entity has a list of available dates
+        return doctorAvailabilityService.getAvailabilityByDoctorId(doctorId); // Assuming Doctor entity has a list of available dates
     }
 }
 

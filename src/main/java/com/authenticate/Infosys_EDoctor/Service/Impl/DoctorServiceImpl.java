@@ -1,8 +1,10 @@
 package com.authenticate.Infosys_EDoctor.Service.Impl;
 
+import com.authenticate.Infosys_EDoctor.Entity.Appointment;
 import com.authenticate.Infosys_EDoctor.Entity.Doctor;
 import com.authenticate.Infosys_EDoctor.Entity.DoctorAvailability;
 import com.authenticate.Infosys_EDoctor.Repository.DoctorRepository;
+import com.authenticate.Infosys_EDoctor.Service.AppointmentService;
 import com.authenticate.Infosys_EDoctor.Service.DoctorAvailabilityService;
 import com.authenticate.Infosys_EDoctor.Service.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Autowired
     private DoctorAvailabilityService doctorAvailabilityService;
+
+    @Autowired
+    private AppointmentService appointmentService;
 
     @Override
     public Doctor addDoctor(Doctor doctor) {
@@ -80,6 +85,26 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public List<Doctor> findDoctorsBySpecialization(String specialization) {
         return doctorRepository.findBySpecialization(specialization);
+    }
+
+    @Override
+    public List<Doctor> findAllDoctors() {
+        return doctorRepository.findAll();
+    }
+
+    @Override
+    public List<Appointment> getAllAppointments(String doctorId) {
+        return appointmentService.getAppointmentsForDoctor(doctorId);
+    }
+
+    @Override
+    public Appointment confirmAppointment(Long appointmentId) {
+        return appointmentService.confirmAppointment(appointmentId);
+    }
+
+    @Override
+    public void cancelAppointment(Long appontmentId, String reason) {
+        appointmentService.cancelAppointment(appontmentId, reason);
     }
 }
 

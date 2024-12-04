@@ -5,10 +5,10 @@ import com.authenticate.Infosys_EDoctor.Entity.DoctorAvailability;
 import com.authenticate.Infosys_EDoctor.Repository.AppointmentRepository;
 import com.authenticate.Infosys_EDoctor.Repository.DoctorAvailabilityRepository;
 import com.authenticate.Infosys_EDoctor.Service.AppointmentService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -49,5 +49,54 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public List<Appointment> getAppointmentsForDoctor(String doctorId) {
         return appointmentRepository.findByDoctor_DoctorId(doctorId);
+    }
+
+    @Override
+    public Appointment getAppointmentById(Long appointmentId) {
+        Appointment existingAppointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Appointment not found with ID: " + appointmentId));
+
+        return existingAppointment;
+    }
+
+    @Override
+    @Transactional
+    public Appointment updateAppointment(Long appointmentId, Appointment updatedAppointment) {
+        Appointment existingAppointment = getAppointmentById(appointmentId);
+
+        existingAppointment.setAppointmentDateTime(updatedAppointment.getAppointmentDateTime());
+        existingAppointment.setReason(updatedAppointment.getReason());
+        existingAppointment.setStatus(Appointment.Status.Pending);
+
+
+        return appointmentRepository.save(existingAppointment);
+    }
+
+    @Override
+    @Transactional
+    public void cancelAppointment(Long appointmentId, String reason) {
+        Appointment existingAppointment = getAppointmentById(appointmentId);
+
+        if (existingAppointment.getStatus() == Appointment.Status.Cancelled) {
+            throw new IllegalStateException("Appointment is already cancelled.");
+        }
+        if (existingAppointment.getStatus() == Appointment.Status.Confirmed) {
+            throw new IllegalStateException("Confirmed appointments cannot be cancelled.");
+        }
+
+
+        existingAppointment.setStatus(Appointment.Status.Cancelled);
+        existingAppointment.setReason(reason);
+
+        appointmentRepository.save(existingAppointment);
+    }
+
+    @Override
+    public Appointment confirmAppointment(Long appointmentId) {
+        Appointment appointment = getAppointmentById(appointmentId);
+
+        appointment.setStatus(Appointment.Status.Confirmed);
+
+        return appointmentRepository.save(appointment);
     }
 }

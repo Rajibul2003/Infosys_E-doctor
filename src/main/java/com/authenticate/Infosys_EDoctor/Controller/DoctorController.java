@@ -1,5 +1,6 @@
 package com.authenticate.Infosys_EDoctor.Controller;
 
+import com.authenticate.Infosys_EDoctor.Entity.Appointment;
 import com.authenticate.Infosys_EDoctor.Entity.Doctor;
 import com.authenticate.Infosys_EDoctor.Entity.DoctorAvailability;
 import com.authenticate.Infosys_EDoctor.Service.DoctorService;
@@ -52,6 +53,25 @@ public class DoctorController {
     public ResponseEntity<List<Doctor>> findDoctorBySpecialization(@RequestParam String specialization) {
         List<Doctor> doctors = doctorService.findDoctorsBySpecialization(specialization);
         return ResponseEntity.ok(doctors);
+    }
+
+    @GetMapping("/all-appointments/{doctorId}")
+    public ResponseEntity<List<Appointment>> getAllAppointments(@PathVariable String doctorId) {
+        List<Appointment> appointments = doctorService.getAllAppointments(doctorId);
+        return ResponseEntity.ok(appointments);
+    }
+
+    @PutMapping("/confirm-appointment/{appointmentId}")
+    public ResponseEntity<Appointment> confirmAppointment(@PathVariable Long appointmentId) {
+        Appointment appointment = doctorService.confirmAppointment(appointmentId);
+
+        return ResponseEntity.ok(appointment);
+    }
+
+    @PutMapping("/cancel-appointment/{appointmentId}")
+    public ResponseEntity<String> cancelAppointment(@PathVariable Long appointmentId, @RequestBody String reason) {
+        doctorService.cancelAppointment(appointmentId, reason);
+        return ResponseEntity.ok("Appointment cancelled successfully");
     }
 }
 

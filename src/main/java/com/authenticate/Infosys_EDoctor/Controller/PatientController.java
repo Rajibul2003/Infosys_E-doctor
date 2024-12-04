@@ -1,5 +1,6 @@
 package com.authenticate.Infosys_EDoctor.Controller;
 
+import com.authenticate.Infosys_EDoctor.Entity.Appointment;
 import com.authenticate.Infosys_EDoctor.Entity.Doctor;
 import com.authenticate.Infosys_EDoctor.Entity.DoctorAvailability;
 import com.authenticate.Infosys_EDoctor.Entity.Patient;
@@ -36,25 +37,6 @@ public class PatientController {
         return ResponseEntity.ok(doctors);
     }
 
-    // 4. Make Appointment
-//    @PostMapping("/makeAppointment")
-//    public ResponseEntity<Appointment> makeAppointment(@RequestBody Appointment appointment) {
-//        return ResponseEntity.ok(patientService.makeAppointment(appointment));
-//    }
-
-    // 5. Update Appointment
-//    @PutMapping("/updateAppointment/{appointmentId}")
-//    public ResponseEntity<Appointment> updateAppointment(@PathVariable Long appointmentId, @RequestBody Appointment updatedAppointment) {
-//        return ResponseEntity.ok(patientService.updateAppointment(appointmentId, updatedAppointment));
-//    }
-
-    // 6. Cancel Appointment
-//    @PutMapping("/cancelAppointment/{appointmentId}")
-//    public ResponseEntity<String> cancelAppointment(@PathVariable Long appointmentId) {
-//        patientService.cancelAppointment(appointmentId);
-//        return ResponseEntity.ok("Appointment canceled successfully");
-//    }
-
     // Find Doctors by Specialization
     @GetMapping("/findDoctorsBySpecialization")
     public ResponseEntity<List<Doctor>> findDoctorsBySpecialization(@RequestParam String specialization) {
@@ -65,6 +47,25 @@ public class PatientController {
     @GetMapping("/doctorAvailableDates")
     public ResponseEntity<List<DoctorAvailability>> getAvailableDates(@RequestParam String doctorId) {
         return ResponseEntity.ok(patientService.getAvailableDates(doctorId));
+    }
+
+    // 4. Make Appointment
+    @PostMapping("/makeAppointment")
+    public ResponseEntity<Appointment> makeAppointment(@RequestBody Appointment appointment) {
+        return ResponseEntity.ok(patientService.makeAppointment(appointment));
+    }
+
+    // 5. Update Appointment
+    @PutMapping("/updateAppointment/{appointmentId}")
+    public ResponseEntity<Appointment> updateAppointment(@PathVariable Long appointmentId, @RequestBody Appointment updatedAppointment) {
+        return ResponseEntity.ok(patientService.updateAppointment(appointmentId, updatedAppointment));
+    }
+
+    // 6. Cancel Appointment
+    @PutMapping("/cancelAppointment/{appointmentId}")
+    public ResponseEntity<String> cancelAppointment(@PathVariable Long appointmentId, @RequestBody String reason) {
+        patientService.cancelAppointment(appointmentId, reason);
+        return ResponseEntity.ok("Appointment canceled successfully");
     }
 }
 

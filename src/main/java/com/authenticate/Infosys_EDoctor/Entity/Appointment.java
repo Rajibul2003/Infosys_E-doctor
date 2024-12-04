@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "appointments")
 public class Appointment {
     public enum Status {
-        Pending, Confirmed, Canceled
+        Pending, Confirmed, Cancelled
     }
 
     @Id
@@ -32,6 +32,7 @@ public class Appointment {
     @NotBlank(message = "Reason for appointment is mandatory")
     private String reason;
 
+    @Column(length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
     @NotNull()
     private Status status;
