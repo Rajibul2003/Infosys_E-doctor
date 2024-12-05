@@ -5,9 +5,9 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService extends UserDetailsService {
-    String registerUser(User user);
-    boolean loginUser(@Valid String username, String password);
-    boolean verifyEmail(String token, String username);
-    boolean resetPassword(String email, String token, String newPassword);
-    boolean sendResetPasswordToken(String email);
+    public User registerUser(User user);
+    public User loginUser(@Valid String username, String password);
+    public boolean verifyEmail(String token, String username);
+    public boolean resetPassword(String email, String token, String newPassword);
+    public boolean sendResetPasswordToken(String email);
 }

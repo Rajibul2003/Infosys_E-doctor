@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public String registerUser(User user) {
+    public User registerUser(User user) {
         Optional<User> exist = userRepository.findByUsername(user.getUsername());
         if(exist.isPresent()) {
             throw new RuntimeException("Username already exists");
@@ -38,16 +38,16 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword())); // Encrypt the password
         String verificationCode = generateOTP();
         user.setVerificationCode(verificationCode);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
 
         emailService.sendEmail(user.getEmail(), "Email Verification", "Your OTP is: " + verificationCode + "\n Enter the OTP in the application to verify email.");
 
-        return "Registration successful! Please check your email to verify your account.";
+        return savedUser;
     }
 
     @Override
-    public boolean loginUser(@Valid String username, String password) {
+    public User loginUser(@Valid String username, String password) {
         User existingUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
 
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if(passwordEncoder.matches(password, existingUser.getPassword())) {
-            return true;
+            return existingUser;
         }
         else {
             throw new RuntimeException("Enter valid password");

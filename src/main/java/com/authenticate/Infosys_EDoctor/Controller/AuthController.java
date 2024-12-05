@@ -4,9 +4,7 @@ import com.authenticate.Infosys_EDoctor.Entity.User;
 import com.authenticate.Infosys_EDoctor.Service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -19,83 +17,40 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@Valid @RequestBody User user) {
-        try {
-            userService.registerUser(user);
-            return ResponseEntity.ok("User registered successfully. Please verify your email.");
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<User> registerUser(@Valid @RequestBody User user) {
+        User savedUser = userService.registerUser(user);
+        return ResponseEntity.ok(savedUser);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@Valid @RequestBody Map<String, String> loginDetails) {
-        try {
+    public ResponseEntity<User> loginUser(@Valid @RequestBody Map<String, String> loginDetails) {
+        String username = loginDetails.get("username");
+        String password = loginDetails.get("password");
 
-            String username = loginDetails.get("username");
-            String password = loginDetails.get("password");
+        User user = userService.loginUser(username, password);
 
-            boolean isAuthenticated = userService.loginUser(username, password);
-            if (isAuthenticated) {
-                return ResponseEntity.ok("User logged in successfully.");
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials.");
-            }
-
-        }
-        catch (UsernameNotFoundException e) {
-            // Handle the case where the provided role is not valid
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestParam("code") String verificationCode, @RequestParam("username") String username) {
-        try {
-            if(userService.verifyEmail(verificationCode, username)) {
-                return ResponseEntity.ok("Email verified Successfully");
-            }
-            else {
-                return ResponseEntity.badRequest().body("Enter valid credentials");
-            }
-        }
-        catch (UsernameNotFoundException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        boolean validated = userService.verifyEmail(verificationCode, username);
+        return validated? ResponseEntity.ok("Email verified successfully")
+                : ResponseEntity.badRequest().body("Enter valid OTP");
     }
 
     @PostMapping("/reset-password/confirm")
     public ResponseEntity<String> resetPassword(@RequestParam("email") String email, @RequestParam("token") String token, @RequestParam("newPassword") String newPassword) {
-        try {
-            if(userService.resetPassword(email, token, newPassword)) {
-                return ResponseEntity.ok("Your password has been successfully changes");
-            }
-
-            return ResponseEntity.badRequest().body("Enter valid credentials");
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        boolean resetPasswordEmailSent = userService.resetPassword(email, token, newPassword);
+        return resetPasswordEmailSent? ResponseEntity.ok("Your password has been successfully changes")
+                :ResponseEntity.badRequest().body("Enter valid email address");
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<String> sendResetPasswordToken(@RequestParam("email") String email) {
-        try {
-           if(userService.sendResetPasswordToken(email)) {
-               return ResponseEntity.ok("Reset password OTP has been successfully sent to your email");
-           }
+        boolean passwordReset = userService.sendResetPasswordToken(email);
 
-           return ResponseEntity.badRequest().body("Enter valid credentials");
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return passwordReset? ResponseEntity.ok("Reset password OTP has been successfully sent to your email")
+                :ResponseEntity.badRequest().body("Enter valid OTP and password");
     }
 }
