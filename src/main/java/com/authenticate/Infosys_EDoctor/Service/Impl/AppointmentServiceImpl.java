@@ -2,13 +2,16 @@ package com.authenticate.Infosys_EDoctor.Service.Impl;
 
 import com.authenticate.Infosys_EDoctor.Entity.Appointment;
 import com.authenticate.Infosys_EDoctor.Entity.DoctorAvailability;
+import com.authenticate.Infosys_EDoctor.Entity.Notification;
 import com.authenticate.Infosys_EDoctor.Repository.AppointmentRepository;
 import com.authenticate.Infosys_EDoctor.Repository.DoctorAvailabilityRepository;
+import com.authenticate.Infosys_EDoctor.Repository.NotificationRepository;
 import com.authenticate.Infosys_EDoctor.Service.AppointmentService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -19,6 +22,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Autowired
     private DoctorAvailabilityRepository availabilityRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @Override
     public Appointment scheduleAppointment(Appointment appointment) {
@@ -38,7 +44,17 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         // Save appointment
         appointment.setStatus(Appointment.Status.Pending);
-        return appointmentRepository.save(appointment);
+        Appointment scheduledAppointment = appointmentRepository.save(appointment);
+
+        // Create notification for patient
+        Notification notification = new Notification();
+        notification.setRecipientEmail(appointment.getPatient().getEmail());
+        notification.setMessage("Your appointment is scheduled on " + appointment.getAppointmentDateTime());
+        notification.setStatus("Pending");
+        notification.setScheduledTime(LocalDateTime.now());
+        notificationRepository.save(notification);
+
+        return scheduledAppointment;
     }
 
     @Override
@@ -53,10 +69,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Appointment getAppointmentById(Long appointmentId) {
-        Appointment existingAppointment = appointmentRepository.findById(appointmentId)
+        return appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Appointment not found with ID: " + appointmentId));
-
-        return existingAppointment;
     }
 
     @Override
@@ -68,6 +82,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         existingAppointment.setReason(updatedAppointment.getReason());
         existingAppointment.setStatus(Appointment.Status.Pending);
 
+        // Create notification for updated appointment
+        Notification notification = new Notification();
+        notification.setRecipientEmail(existingAppointment.getPatient().getEmail());
+        notification.setMessage("Your appointment has been updated to " + updatedAppointment.getAppointmentDateTime());
+        notification.setStatus("Pending");
+        notification.setScheduledTime(LocalDateTime.now());
+        notificationRepository.save(notification);
 
         return appointmentRepository.save(existingAppointment);
     }
@@ -84,9 +105,16 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new IllegalStateException("Confirmed appointments cannot be cancelled.");
         }
 
-
         existingAppointment.setStatus(Appointment.Status.Cancelled);
         existingAppointment.setReason(reason);
+
+        // Create cancellation notification
+        Notification notification = new Notification();
+        notification.setRecipientEmail(existingAppointment.getPatient().getEmail());
+        notification.setMessage("Your appointment was canceled. Reason: " + reason);
+        notification.setStatus("Pending");
+        notification.setScheduledTime(LocalDateTime.now());
+        notificationRepository.save(notification);
 
         appointmentRepository.save(existingAppointment);
     }
@@ -96,6 +124,14 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = getAppointmentById(appointmentId);
 
         appointment.setStatus(Appointment.Status.Confirmed);
+
+        // Create confirmation notification
+        Notification notification = new Notification();
+        notification.setRecipientEmail(appointment.getPatient().getEmail());
+        notification.setMessage("Your appointment has been confirmed for " + appointment.getAppointmentDateTime());
+        notification.setStatus("Pending");
+        notification.setScheduledTime(LocalDateTime.now());
+        notificationRepository.save(notification);
 
         return appointmentRepository.save(appointment);
     }

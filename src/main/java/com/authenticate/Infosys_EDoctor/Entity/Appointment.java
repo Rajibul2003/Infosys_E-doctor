@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "appointments")
 public class Appointment {
+    public @NotNull(message = "Appointment date and time is mandatory") LocalDateTime getAppointmentDate() {
+        return null;
+    }
+
     public enum Status {
         Pending, Confirmed, Cancelled
     }

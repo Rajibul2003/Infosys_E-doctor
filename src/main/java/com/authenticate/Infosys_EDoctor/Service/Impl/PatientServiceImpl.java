@@ -44,7 +44,7 @@ public class PatientServiceImpl implements PatientService {
     // 1. Add Profile
     public Patient addPatient(Patient patient) {
         Optional<Patient> exists = patientRepository.findByEmail(patient.getEmail());
-        if(exists.isPresent()) {
+        if (exists.isPresent()) {
             throw new RuntimeException("Patient with given email already exists");
         }
 
@@ -76,23 +76,44 @@ public class PatientServiceImpl implements PatientService {
         return patientRepository.save(existingPatient);
     }
 
-    // 3. Find Doctors
-    public List<Doctor> findDoctors() {
+    // 3. Get Patient by ID
+    public Patient getPatientById(String patientId) {
+        return patientRepository.findById(patientId)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found with ID: " + patientId));
+    }
 
+    @Override
+    public void deletePatient(String patientId) {
+        // Check if the patient exists by ID
+        Patient existingPatient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
+
+        // Delete the patient if found
+        patientRepository.delete(existingPatient);
+    }
+
+    @Override
+    public List<Patient> findAllPatients() {
+        return patientRepository.findAll();
+    }
+
+
+    // 4. Find Doctors
+    public List<Doctor> findDoctors() {
         return doctorService.findAllDoctors(); // Fetches all doctors
     }
 
-    // 4. Make Appointment
+    // 5. Make Appointment
     public Appointment makeAppointment(Appointment appointment) {
         return appointmentService.scheduleAppointment(appointment);
     }
 
-    // 5. Update Appointment
+    // 6. Update Appointment
     public Appointment updateAppointment(Long appointmentId, Appointment updatedAppointment) {
         return appointmentService.updateAppointment(appointmentId, updatedAppointment);
     }
 
-    // 6. Cancel Appointment
+    // 7. Cancel Appointment
     @Override
     @Transactional
     public void cancelAppointment(Long appointmentId, String reason) {
@@ -103,9 +124,8 @@ public class PatientServiceImpl implements PatientService {
         return doctorService.findDoctorsBySpecialization(specialization);
     }
 
-    // Check Available Dates for a Particular Doctor
+    // 8. Check Available Dates for a Particular Doctor
     public List<DoctorAvailability> getAvailableDates(String doctorId) {
         return doctorAvailabilityService.getAvailabilityByDoctorId(doctorId); // Assuming Doctor entity has a list of available dates
     }
 }
-

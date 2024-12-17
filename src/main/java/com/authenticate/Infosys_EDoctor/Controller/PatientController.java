@@ -30,7 +30,13 @@ public class PatientController {
         return ResponseEntity.ok(patientService.updateProfile(patientId, updatedPatient));
     }
 
-    // 3. Find Doctors
+    // 3. View Patient Details
+    @GetMapping("/viewProfile")
+    public ResponseEntity<Patient> viewPatientDetails(@RequestParam String patientId) {
+        return ResponseEntity.ok(patientService.getPatientById(patientId));
+    }
+
+    // 4. Find Doctors
     @GetMapping("/findDoctors")
     public ResponseEntity<List<Doctor>> findDoctors() {
         List<Doctor> doctors = patientService.findDoctors();
@@ -49,23 +55,22 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getAvailableDates(doctorId));
     }
 
-    // 4. Make Appointment
+    // 5. Make Appointment
     @PostMapping("/makeAppointment")
     public ResponseEntity<Appointment> makeAppointment(@RequestBody Appointment appointment) {
         return ResponseEntity.ok(patientService.makeAppointment(appointment));
     }
 
-    // 5. Update Appointment
+    // 6. Update Appointment
     @PutMapping("/updateAppointment/{appointmentId}")
     public ResponseEntity<Appointment> updateAppointment(@PathVariable Long appointmentId, @RequestBody Appointment updatedAppointment) {
         return ResponseEntity.ok(patientService.updateAppointment(appointmentId, updatedAppointment));
     }
 
-    // 6. Cancel Appointment
+    // 7. Cancel Appointment
     @PutMapping("/cancelAppointment/{appointmentId}")
     public ResponseEntity<String> cancelAppointment(@PathVariable Long appointmentId, @RequestBody String reason) {
         patientService.cancelAppointment(appointmentId, reason);
         return ResponseEntity.ok("Appointment canceled successfully");
     }
 }
-
